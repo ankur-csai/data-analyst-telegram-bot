@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: data-analyst-telegram-bot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GH_TOKEN
+        sync: false
+      - key: GITHUB_REPO
+        sync: false

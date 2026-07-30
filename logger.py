@@ -15,9 +15,20 @@ LOG_PATH = "logs/run.jsonl"
 _lock = asyncio.Lock()
 
 
+def _repo():
+    """Accepts either 'owner/repo' or a full github.com URL, in case the env
+    var gets set to a pasted URL instead of the short form."""
+    repo = os.environ["GITHUB_REPO"].strip().rstrip("/")
+    for prefix in ("https://github.com/", "http://github.com/", "github.com/"):
+        if repo.startswith(prefix):
+            repo = repo[len(prefix):]
+    if repo.endswith(".git"):
+        repo = repo[:-4]
+    return repo
+
+
 def log_url():
-    repo = os.environ["GITHUB_REPO"]
-    return f"https://raw.githubusercontent.com/{repo}/main/{LOG_PATH}"
+    return f"https://raw.githubusercontent.com/{_repo()}/main/{LOG_PATH}"
 
 
 def _headers():
@@ -28,7 +39,7 @@ def _headers():
 
 
 def _get_current():
-    repo = os.environ["GITHUB_REPO"]
+    repo = _repo()
     resp = requests.get(
         f"{GITHUB_API}/repos/{repo}/contents/{LOG_PATH}",
         headers=_headers(),
@@ -45,7 +56,7 @@ def _get_current():
 
 
 def _put(new_content, sha, message):
-    repo = os.environ["GITHUB_REPO"]
+    repo = _repo()
     body = {
         "message": message,
         "content": base64.b64encode(new_content.encode("utf-8")).decode("ascii"),
